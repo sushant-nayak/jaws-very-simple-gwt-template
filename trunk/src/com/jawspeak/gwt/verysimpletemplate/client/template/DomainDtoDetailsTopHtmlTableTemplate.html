@@ -1,0 +1,32 @@
+<div style="border: 2px solid #fa7; background: #efeae7;">
+<p>This comes from DomainDtoDetailsTopHtmlTableTemplate.html. The blue outlined cells' 
+contents were added with automatic databinding. The red outlined cells were manually set.</p>
+<table width="0" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <th rowspan="3" scope="col">&nbsp;</th>
+    <th scope="col">Start date</th>
+    <!-- startDate below won't be replaced automatically, because the template starts with double dollar sign -->
+    <td colspan="2" scope="col" class="red">$${domainDto.startDate}</td>
+  </tr>
+  <tr>
+    <!-- it is so much easier to use semantic markup this way, rather than with the GWT Widgets -->
+    <th>Name</th>
+    <td class="blue">${domainDto.name}</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <th>Count</th>
+    <td colspan="2" class="blue">${domainDto.count}</td>
+  </tr>
+  <tr>
+    <td colspan="4"><h4>Subheading</h4></td>
+  </tr>
+  <tr>
+    <th>Some Ratio</th>
+    <td class="blue">${domainDto.someRatio}</td>
+    <td>&nbsp;</td>
+    <!--  Notice how below we can use this template hook to add in another widget with Events. -->
+    <td class="red">$${x.hookForMouseOverEvent}</td>
+  </tr>
+</table>
+</div>
