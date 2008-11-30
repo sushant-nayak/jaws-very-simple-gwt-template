@@ -1,0 +1,184 @@
+<project name="JawsVerySimpleGwtHtmlTemplateExample" default="all" basedir=".">
+  <description>
+    For more build file information and great examples see:
+    http://tomcat.apache.org/tomcat-6.0-doc/appdev/build.xml.txt
+    Author: Jonathan Andrew Wolter jaw@jawspeak.com
+  </description>
+
+  <property file="buildlocal.properties" /> <!-- not checked in, but use it to override build.properties defined properties -->
+  <property file="build.properties" />
+  <property environment="env" />
+
+  <property name="app.name" value="jaws-very-simple-gwt-html-template-example" />
+  <property name="app.path" value="/${app.name}" />
+  <property name="app.version" value="0.1-dev" />
+  <property name="build.home" value="${basedir}/build" />
+  <property name="test.result" location="${build.home}/testresult" />
+  <property name="dist.home" value="${basedir}/dist" />
+  <property name="src.home" value="${basedir}/src" />
+  <property name="test.home" value="${basedir}/test" />
+  <property name="test.gwt.home" value="${basedir}/test-gwt" />
+
+  <!--
+    All Classpath Definitions go up here, otherwise it gets too complicatd
+    having them piecemeal below. That means create a path id even if it is
+    only used once.
+  -->
+  <path id="compile.classpath">
+    <pathelement location="${gwt.dev.jar}" />
+    <pathelement location="${gwt.user.jar}" />
+    <fileset dir="${basedir}/lib">
+      <include name="*.jar" />
+    </fileset>
+  </path>
+
+  <path id="test.classpath">
+    <path refid="compile.classpath" />
+    <pathelement location="lib/junit-4.5.jar" />
+    <pathelement location="${build.home}/classes" />
+    <pathelement location="${build.home}/test-classes" />
+  </path>
+  
+  <path id="gwt.compile.classpath">
+    <pathelement location="${src.home}" />
+    <pathelement location="${gwt.dev.jar}" />
+    <pathelement location="${gwt.user.jar}" />
+    <path refid="compile.classpath" />
+  </path>
+
+  <path id="gwt.test.classpath">
+    <path refid="test.classpath" />
+    <path refid="gwt.compile.classpath" /> 
+    <pathelement location="${test.gwt.home}" />
+  </path>
+
+  <path id="gwt.test.run.classpath">
+    <path refid="gwt.test.classpath" /> 
+    <pathelement location="${build.home}/test-gwt" />
+  </path>
+
+  <path id="gwt.run.classpath">
+    <path refid="gwt.compile.classpath" />
+  </path>
+
+
+	<target name="all" depends="clean,test,gwt.test.suite" description="Clean build and dist directories, then run tests" />
+
+	
+  <target name="clean" description="Delete old build and dist directories">
+    <delete dir="${build.home}" />
+    <delete dir="${dist.home}" />
+    <antcall target="gwt.clean" />
+  </target>
+
+
+  <target name="compile" depends="compile.prepare, compile.run" description="Compile Java sources." />
+
+
+  <target name="compile.prepare">
+    <property name="compile.debug" value="true" />
+    <property name="compile.deprecation" value="false" />
+    <property name="compile.optimize" value="true" />
+
+    <mkdir dir="${build.home}" />
+    <mkdir dir="${build.home}/classes" />
+  </target>
+
+
+  <target name="compile.run">
+    <javac srcdir="${src.home}" destdir="${build.home}/classes"
+        debug="${compile.debug}" deprecation="${compile.deprecation}"
+        optimize="${compile.optimize}">
+      <classpath refid="compile.classpath" />
+    </javac>
+
+    <copy todir="${build.home}/classes">
+      <fileset dir="${src.home}" excludes="**/*.java" />
+    </copy>
+  </target>
+
+  <target name="test" depends="compile, test.compile, test.run" description="Runs all tests." />
+
+  <target name="test.compile">
+    <mkdir dir="${build.home}/test-classes" />
+    <mkdir dir="${build.home}/testresult" />
+    <javac srcdir="${test.home}" destdir="${build.home}/test-classes">
+      <classpath refid="test.classpath" />
+    </javac>
+  </target>
+
+	
+  <target name="test.run">
+    <junit fork="yes" printsummary="true" errorProperty="test.failed" maxmemory="500M" failureProperty="test.failed">
+      <classpath refid="test.classpath" />
+      <formatter type="xml" />
+      <batchtest fork="yes" todir="${test.result}">
+        <fileset dir="${test.home}" includes="**/*Test.java" />
+      </batchtest>
+    </junit>
+    <fail message="Test failed. Check log or reports in '${test.result}'." if="test.failed" />
+  </target>
+
+
+
+  <target name="gwt.compile" depends="compile" description="Compile GWT code to javascript">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.GWTCompiler">
+      <jvmarg line="-XstartOnFirstThread" />
+      <jvmarg line="-Xmx256M" />
+      <arg line="-out www/" />
+    	<arg line="com.jawspeak.gwt.verysimpletemplate.JawsVerySimpleGwtHtmlTemplateExample" />
+      <classpath refid="gwt.compile.classpath" />
+    </java>
+  </target>
+
+  <target name="gwt.clean" description="Cleans GWT output directory">
+    <delete dir="${build.home}/test-gwt" />
+    <delete dir="www" />
+    <delete dir="www-test" />
+  </target>
+
+  <target name="gwt.shell" depends="gwt.compile" description="Launch GWT shell application">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.GWTShell">
+      <jvmarg line="-XstartOnFirstThread" /> <!-- needed for mac users -->
+      <jvmarg line="-Xmx256M" />
+      <arg line="-out www/" />
+      <arg line="com.jawspeak.gwt.verysimpletemplate.JawsVerySimpleGwtHtmlTemplateExample/JawsVerySimpleGwtHtmlTemplateExample.html" />
+      <classpath refid="gwt.run.classpath" />
+    </java>
+  </target>
+
+  <target name="gwt.test.compile" depends="compile,test.compile" description="Compile gwt tests">
+    <mkdir dir="${build.home}/test-gwt" />
+    <javac srcdir="${test.gwt.home}" destdir="${build.home}/test-gwt">
+      <classpath refid="gwt.test.classpath" />
+    </javac>
+  </target>
+
+	<target name="gwt.test.prepare">
+		<fail unless="gwtTest">Need to specify the test to run with -DgwtTest=com.foo.x.y.ClazzTest</fail>
+	</target>
+	
+  <target name="gwt.test" depends="gwt.test.prepare,gwt.test.compile" description="Run one test specified by the -DgwtTest=com.foo.ClazzTest">
+    <java failonerror="true" fork="true" classname="junit.textui.TestRunner">
+      <jvmarg line="-XstartOnFirstThread" />
+      <jvmarg line="-Dgwt.args='-out www-test'" />
+      <jvmarg line="-Xmx256M" />
+      <arg line="${gwtTest}" />
+      <classpath refid="gwt.test.run.classpath" />
+    </java>
+  </target>
+
+  <target name="gwt.test.suite" depends="gwt.test.compile" description="Runs the AllGwtTests suite">
+    <junit fork="yes" printsummary="true" errorProperty="test.failed" failureProperty="test.failed">
+      <jvmarg value="-XstartOnFirstThread" /> <!-- required for mac users -->
+      <jvmarg line="-Xmx256M" />
+      <classpath refid="gwt.test.run.classpath" />
+      <formatter type="xml" />
+      <formatter usefile="false" type="plain" />
+      <test name="com.jawspeak.gwt.verysimpletemplate.client.AllGwtTests" fork="yes" todir="${test.result}" />
+    </junit>
+    <fail message="Test failed. Check log or reports in '${test.result}'." if="test.failed" />
+    <echo message="Note: some 'no source code is available for type...' messages are expected. (Ask Jonathan or search GWT google group for why)." />
+    <echo message="GWT Suite passed. Did you REMEMBER to add all gwt tests to AllGwtTests?" />
+  </target>
+</project>

@@ -1,0 +1,15 @@
+<module>
+	<inherits name='com.google.gwt.user.User' />
+	<inherits name='com.google.gwt.user.theme.standard.Standard' />
+	<stylesheet src='JawsVerySimpleGwtHtmlTemplateExample.css' />
+
+	<source path='client'/>
+	<source path='domain'/>
+
+	<entry-point class='com.jawspeak.gwt.verysimpletemplate.client.JawsVerySimpleGwtHtmlTemplateExample' />
+
+  <!--  my simple templating tool that allows us to import markup in html files -->
+  <generate-with class="com.jawspeak.gwt.verysimpletemplate.rebind.VerySimpleGwtTemplateGenerator">
+    <when-type-assignable class="com.jawspeak.gwt.verysimpletemplate.client.template.VerySimpleGwtTemplated" />
+  </generate-with>	
+</module>
