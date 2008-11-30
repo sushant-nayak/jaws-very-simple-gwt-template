@@ -43,6 +43,7 @@
     <pathelement location="${src.home}" />
     <pathelement location="${gwt.dev.jar}" />
     <pathelement location="${gwt.user.jar}" />
+    <pathelement location="${build.home}/classes" />
     <path refid="compile.classpath" />
   </path>
 
